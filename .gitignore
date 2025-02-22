@@ -1,0 +1,5 @@
+#All Node Modules no matter where they are in the project
+node_modules/
+
+# Logs
+logs/

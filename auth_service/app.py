@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template, redirect, make_response
-from flask_jwt_extended import create_access_token, jwt_required, JWTManager
+from flask_jwt_extended import create_access_token, jwt_required, JWTManager, get_jwt_identity
 import pymysql
 import os
 from dotenv import load_dotenv
@@ -94,15 +94,17 @@ def login():
 
     access_token = create_access_token(identity=username)
 
-    response = make_response(redirect("/protected"))
-    response.set_cookie("access_token_cookie", access_token, httponly=True, samesite="Lax")
+    response = jsonify({ "token": access_token })  # Return token instead of redirecting
+    response.set_cookie("token", access_token, httponly=True, samesite="None", secure=False)
+    
     return response
 
 
 @app.route("/protected", methods=["GET"])
 @jwt_required(locations=["cookies", "headers"])
 def protected():
-    return jsonify({"message": "Access granted"})
+    user = get_jwt_identity()
+    return jsonify({"message": "Access granted", "user": user})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)

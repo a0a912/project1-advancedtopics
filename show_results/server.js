@@ -3,9 +3,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-
+const path = require("path");
 const app = express();
-app.use(express.json());
+
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());  // Add this middleware
+
+//app.use(express.json());
+app.use(express.static(path.join(__dirname, "views")));
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongo_db:27017/data_analytics';
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://auth_service:5001/protected';
@@ -18,23 +23,37 @@ const TemperatureSchema = new mongoose.Schema({
 });
 const Temperature = mongoose.model('Temperature', TemperatureSchema);
 
-async function verifyToken(token) {
+async function verifyToken(req) {
+    let token = req.cookies.token || req.cookies.access_token_cookie;  // Read from both cookies
+    if (!token && req.headers.authorization) {
+        token = req.headers.authorization.split(' ')[1];  // Fallback to Authorization header
+    }
+
+    console.log("Token received:", token); // LOGGING
+
+    if (!token) {
+        console.log("No token received.");
+        return null;
+    }
+
     try {
         const response = await axios.get(AUTH_SERVICE_URL, { headers: { Authorization: `Bearer ${token}` } });
+        console.log("Token verification success:", response.data);
         return response.data;
     } catch (error) {
+        console.log("Token verification failed:", error.message);
         return null;
     }
 }
 
+
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "index.html"));
+});
+
 app.get('/results', async (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const verified = await verifyToken(token);
+    const verified = await verifyToken(req);
     if (!verified) {
         return res.status(401).json({ error: 'Invalid token' });
     }
