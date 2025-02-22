@@ -42,28 +42,35 @@ app.get("/", authenticateToken, async (req, res) => {
 
 // Endpoint to submit temperature data
 app.post("/submit-temperature", (req, res) => {
-    if (!req.cookies.user) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
-    console.log(req.body);
-    const temperature = req.body.temperature;
-
-  if (!temperature) {
-    return res.status(400).json({ error: "Missing temperature" });
+  if (!req.cookies.user) {
+      return res.status(401).json({ error: "Unauthorized" });
   }
 
-  db.query(
-    "INSERT INTO temperatures (user_id, temperature, timestamp) VALUES (?, ?, NOW())",
-    [req.cookies.user.id, temperature],
-    (err, result) => {
-      if (err) {
-        return err;
-      }
-    }
-  );
+  console.log("Received temperature data:", req.body);
+  const temperature = req.body.temperature;
 
-  res.redirect("/");
+  if (!temperature) {
+      return res.status(400).json({ error: "Missing temperature" });
+  }
+
+  const userId = req.cookies.user.id;
+
+  console.log(`Inserting temperature ${temperature} for user ${userId}`);
+
+  db.query(
+      "INSERT INTO temperatures (user_id, temperature, timestamp) VALUES (?, ?, NOW())",
+      [userId, temperature],
+      (err, result) => {
+          if (err) {
+              console.error("Database Insert Error:", err);
+              return res.status(500).json({ error: "Database Error" });
+          }
+          console.log("Inserted temperature successfully.");
+          res.redirect("/");
+      }
+  );
 });
+
 
 const PORT = process.env.PORT || 5002;
 app.listen(PORT,  () => {
