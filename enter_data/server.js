@@ -33,16 +33,12 @@ db.connect(err => {
 });
 
 
-app.get("/", async (req, res) => {
-    if(!req.cookies.user) {
-        // Check if the user is authenticated with JWT
-        await authenticateToken(req, res);
-    }
-    else {
-        console.log(req.cookies.user);
-        res.render("index", { user: req.cookies.user });
-    }
+app.get("/", authenticateToken, async (req, res) => {
+  console.log("Rendering index.ejs with user:", req.cookies.user);
+  res.render("index", { user: req.cookies.user });
 });
+
+
 
 // Endpoint to submit temperature data
 app.post("/submit-temperature", (req, res) => {

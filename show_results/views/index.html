@@ -20,10 +20,12 @@
         </tr>
     </table>
 
+    <button id="goToEnterData">Go to Enter Data</button>
+
     <script>
         const token = document.cookie.split('; ').find(row => row.startsWith('token='))
-                      ?.split('=')[1];  // Extract JWT from cookies
-    
+                      ?.split('=')[1];  // Get JWT from cookies
+
         if (!token) {
             alert("You are not authenticated!");
             window.location.href = "http://127.0.0.1:5001/login";
@@ -42,7 +44,10 @@
                 }
             });
         }
+
+        document.getElementById("goToEnterData").addEventListener("click", function() {
+            window.location.href = "http://127.0.0.1:5002/";
+        });
     </script>
-    
 </body>
 </html>

@@ -6,7 +6,8 @@
     <title>Login</title>
 </head>
 <body>
-    <h2>Login</h2>
+    <h2 id="loginTitle">Login</h2>
+
     <form id="loginForm">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
@@ -17,7 +18,9 @@
         <button type="submit">Login</button>
     </form>
 
+    <h3 id="loggedInMessage" style="display:none;">You are logged in now.</h3>
     <button id="goToResults" style="display:none;">Go to Show Results</button>
+    <button id="goToEnterData" style="display:none;">Go to Enter Data</button>
 
     <script>
         document.getElementById("loginForm").addEventListener("submit", async function(event) {
@@ -38,8 +41,14 @@
                 // Store token in a cookie
                 document.cookie = `token=${data.token}; path=/; SameSite=None; Secure`;
 
-                // Show "Go to Results" button
+                // Hide the login form and change the title
+                document.getElementById("loginForm").style.display = "none";
+                document.getElementById("loginTitle").innerText = "Welcome!";
+                document.getElementById("loggedInMessage").style.display = "block";
+
+                // Show navigation buttons
                 document.getElementById("goToResults").style.display = "block";
+                document.getElementById("goToEnterData").style.display = "block";
             } else {
                 alert("Login failed: " + (data.error || "Unknown error"));
             }
@@ -47,6 +56,10 @@
 
         document.getElementById("goToResults").addEventListener("click", function() {
             window.location.href = "http://127.0.0.1:5004/";
+        });
+
+        document.getElementById("goToEnterData").addEventListener("click", function() {
+            window.location.href = "http://127.0.0.1:5002/";
         });
     </script>
 </body>
